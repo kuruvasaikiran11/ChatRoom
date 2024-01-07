@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket Chat</title>
+</head>
+<body>
+  <input type="text" id="name" placeholder="Your Name">
+  <input type="text" id="key" placeholder="Special Key">
+  <button onclick="joinChat()">Join Chat</button>
+  <ul id="userList"></ul>
+  <div id="chatBox"></div>
+  <input type="text" id="messageInput" placeholder="Type your message">
+  <button onclick="sendMessage()">Send</button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    socket.on('userList', (users) => {
+      displayUserList(users);
+    });
+
+    socket.on('chatMessage', (message) => {
+      displayChatMessage(message);
+    });
+
+    socket.on('error', (error) => {
+      alert(error);
+    });
+
+    function joinChat() {
+      const name = document.getElementById('name').value;
+      const key = document.getElementById('key').value;
+      socket.emit('join', { name, key });
+    }
+
+    function sendMessage() {
+      const text = document.getElementById('messageInput').value;
+      socket.emit('chatMessage', { text });
+      document.getElementById('messageInput').value = '';
+    }
+
+    function displayUserList(users) {
+      const userList = document.getElementById('userList');
+      userList.innerHTML = '';
+      users.forEach((user) => {
+        const li = document.createElement('li');
+        li.style.color = user.color;
+        li.textContent = user.name;
+        userList.appendChild(li);
+      });
+    }
+
+    function displayChatMessage(message) {
+      const chatBox = document.getElementById('chatBox');
+      const p = document.createElement('p');
+      p.style.color = message.user.color;
+      p.textContent = `${message.user.name}: ${message.text}`;
+      chatBox.appendChild(p);
+    }
+  </script>
+</body>
+</html>
